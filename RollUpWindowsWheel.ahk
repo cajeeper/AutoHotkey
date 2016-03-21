@@ -1,79 +1,68 @@
-﻿
-ws_MinHeight = 25
-
-
-;#Persistent
-;SetTimer, WatchCursor, 100
-;return
-
-
-; This line will unroll any rolled up windows if the script exits
+﻿; This line will unroll any rolled up windows if the script exits
 ; for any reason:
 OnExit, ExitSub
+
+#SingleInstance, force 
+#Persistent 
+ws_MinHeight = 25
+ws_IDList = ''
 return  ; End of auto-execute section
 
+#z::
+Loop
+{
 
-
-
-;WatchCursor:
-
-WheelUp::
-	MouseGetPos, , ypos 
-	if (ypos >= 0 and ypos <=25) {
+	WheelUp::
+		MouseGetPos, , ypos 
 		WinGet, ws_ID, ID, A
-		WinGetPos,,,, ws_Height, A
-		ws_Window%ws_ID% = %ws_Height%
-		WinMove, ahk_id %ws_ID%,,,,, %ws_MinHeight%
-		ws_IDList = %ws_IDList%|%ws_ID%
-		return
-	} else {
-		Send {WheelUp}
-		return
-	}
-		Loop, Parse, ws_IDList, |
-	{
-		if A_LoopField =  ; First field in list is normally blank.
-			continue      ; So skip it.
-		StringTrimRight, ws_Height, ws_Window%A_LoopField%, 0
-		WinMove, ahk_id %A_LoopField%,,,,, %ws_Height%
-	}
-
-	
-WheelDown::
-	MouseGetPos, , ypos 
-	if (ypos >= 0 and ypos <=25) {
-		Loop, Parse, ws_IDList, |
-		{
-			IfEqual, A_LoopField, %ws_ID%
+		if (ypos >= 0 and ypos <=25) {
+			if (ws_Window%ws_ID% > 0)
 			{
-				; Match found, so this window should be restored (unrolled):
-				StringTrimRight, ws_Height, ws_Window%ws_ID%, 0
-				WinMove, ahk_id %ws_ID%,,,,, %ws_Height%
-				StringReplace, ws_IDList, ws_IDList, |%ws_ID%
+				Send {WheelUp}
+				return
+			} else {
+				WinGetPos,,,, ws_Height, A
+				ws_Window%ws_ID% = %ws_Height%
+				WinMove, ahk_id %ws_ID%,,,,, %ws_MinHeight%
+				ws_IDList = %ws_IDList%|%ws_ID%
 				return
 			}
+		} else {
+			Send {WheelUp}
+			return
 		}
-	} else {
-		Send {WheelDown}
-		return
-	}
-	Loop, Parse, ws_IDList, |
-	{
-		if A_LoopField =  ; First field in list is normally blank.
-			continue      ; So skip it.
-		StringTrimRight, ws_Height, ws_Window%A_LoopField%, 0
-		WinMove, ahk_id %A_LoopField%,,,,, %ws_Height%
-	}
+		
+	WheelDown::
+		MouseGetPos, , ypos 
+		WinGet, ws_ID, ID, A
+		if (ypos >= 0 and ypos <=25) {
+			Loop, Parse, ws_IDList, |
+			{
+				IfEqual, A_LoopField, %ws_ID%
+				{
+					; Match found, so this window should be restored (unrolled):
+					StringTrimRight, ws_Height, ws_Window%ws_ID%, 0
+					WinMove, ahk_id %ws_ID%,,,,, %ws_Height%
+					StringReplace, ws_IDList, ws_IDList, |%ws_ID%
+					ws_Window%ws_ID% =
+					return
+				}
+			}
+		} else {
+			Send {WheelDown}
+			return
+		}
 
 
-;return
-
+	return
+}
+	
 ExitSub:
 	Loop, Parse, ws_IDList, |
 	{
 		if A_LoopField =  ; First field in list is normally blank.
 			continue      ; So skip it.
-		StringTrimRight, ws_Height, ws_Window%A_LoopField%, 0
+		;StringTrimRight, ws_Height, ws_Window%A_LoopField%, 0
 		WinMove, ahk_id %A_LoopField%,,,,, %ws_Height%
 	}
 
