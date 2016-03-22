@@ -7,6 +7,7 @@ OnExit, ExitSub
 ws_MinHeight = 25
 ws_IDList = ''
 return  ; End of auto-execute section
+#MaxHotkeysPerInterval 300
 
 #z::
 Loop
